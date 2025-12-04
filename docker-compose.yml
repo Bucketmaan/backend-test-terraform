@@ -1,0 +1,32 @@
+services:
+    crud-srvc:
+        build: .
+        ports:
+            - "3000:3000"
+        environment:
+            - NODE_ENV=production
+            - PORT=3000
+            - PG_HOST=db
+            - PG_PORT=5432
+            - PG_USER=postgres
+            - PG_PASSWORD=example
+            - PG_DATABASE=crud_db
+
+    db:
+        image: postgres:13
+        environment:
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=example
+            - POSTGRES_DB=crud_db
+        ports:
+            - "5432:5432"
+        volumes:
+            - db-data:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+
+volumes:
+    db-data:
