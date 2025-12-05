@@ -24,12 +24,6 @@ const swaggerOptions = {
             version: "1.0.0",
             description: "A simple CRUD API for managing items with PostgreSQL",
         },
-        servers: [
-            {
-                url: "http://localhost:3000",
-                description: "Development server",
-            },
-        ],
         components: {
             schemas: {
                 Item: {
