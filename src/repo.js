@@ -8,7 +8,10 @@ export async function initDb() {
                 name VARCHAR(255) NOT NULL,
                 description TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                smoker VARCHAR(255),
+                longitude FLOAT,
+                latitude FLOAT
             )
         `);
         console.log("Database initialized successfully");
@@ -38,11 +41,11 @@ export async function getItemById(id) {
     }
 }
 
-export async function createItem(name, description) {
+export async function createItem(name, description, smoker, longitude, latitude) {
     try {
         const res = await query(
-            "INSERT INTO items (name, description) VALUES ($1, $2) RETURNING *",
-            [name, description]
+            "INSERT INTO items (name, description, smoker, longitude, latitude) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+            [name, description, smoker, longitude, latitude]
         );
         return res.rows[0];
     } catch (err) {
@@ -51,11 +54,11 @@ export async function createItem(name, description) {
     }
 }
 
-export async function updateItem(id, name, description) {
+export async function updateItem(id, name, description, smoker, longitude, latitude) {
     try {
         const res = await query(
-            "UPDATE items SET name = $1, description = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 RETURNING *",
-            [name, description, id]
+            "UPDATE items SET name = $1, description = $2, smoker = $3, longitude = $4, latitude = $5, updated_at = CURRENT_TIMESTAMP WHERE id = $6 RETURNING *",
+            [name, description, smoker, longitude, latitude, id]
         );
         return res.rows[0] || null;
     } catch (err) {

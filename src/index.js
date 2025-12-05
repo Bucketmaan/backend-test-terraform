@@ -1,7 +1,6 @@
 import express from "express";
 import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
-import cors from "cors";
 import {
     initDb,
     getItems,
@@ -14,7 +13,6 @@ import {
 const app = express();
 const port = 3000;
 
-app.use(cors());
 app.use(express.json());
 
 // Swagger setup
@@ -26,6 +24,12 @@ const swaggerOptions = {
             version: "1.0.0",
             description: "A simple CRUD API for managing items with PostgreSQL",
         },
+        servers: [
+            {
+                url: "http://localhost:3000",
+                description: "Development server",
+            },
+        ],
         components: {
             schemas: {
                 Item: {
@@ -53,6 +57,20 @@ const swaggerOptions = {
                             format: "date-time",
                             description: "Last update timestamp",
                         },
+                        smoker: {
+                            type: "string",
+                            description: "Smoker information",
+                        },
+                        longitude: {
+                            type: "number",
+                            format: "float",
+                            description: "Longitude coordinate",
+                        },
+                        latitude: {
+                            type: "number",
+                            format: "float",
+                            description: "Latitude coordinate",
+                        },
                     },
                     required: ["id", "name"],
                 },
@@ -67,8 +85,22 @@ const swaggerOptions = {
                             type: "string",
                             description: "Item description",
                         },
+                        smoker: {
+                            type: "string",
+                            description: "Smoker information",
+                        },
+                        longitude: {
+                            type: "number",
+                            format: "float",
+                            description: "Longitude coordinate",
+                        },
+                        latitude: {
+                            type: "number",
+                            format: "float",
+                            description: "Latitude coordinate",
+                        },
                     },
-                    required: ["name"],
+                    required: ["name", "smoker", "longitude", "latitude"],
                 },
                 Error: {
                     type: "object",
@@ -118,9 +150,9 @@ const checkDbConnection = (req, res, next) => {
 
 /**
  * @swagger
- * /items:
+ * /smoke:
  *   post:
- *     summary: Create a new item
+ *     summary: Create a new smoke point item
  *     tags: [Items]
  *     requestBody:
  *       required: true
@@ -148,13 +180,13 @@ const checkDbConnection = (req, res, next) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-app.post("/items", checkDbConnection, async (req, res) => {
+app.post("/smoke", checkDbConnection, async (req, res) => {
     try {
-        const { name, description } = req.body;
+        const { name, description, smoker, longitude, latitude } = req.body;
         if (!name) {
             return res.status(400).json({ error: "Name is required" });
         }
-        const newItem = await createItem(name, description || null);
+        const newItem = await createItem(name, description || null, smoker, longitude, latitude);
         res.status(201).json(newItem);
     } catch (err) {
         console.error("Error creating item:", err);
@@ -164,9 +196,9 @@ app.post("/items", checkDbConnection, async (req, res) => {
 
 /**
  * @swagger
- * /items:
+ * /smoke:
  *   get:
- *     summary: Get all items
+ *     summary: Get all smoke point items
  *     tags: [Items]
  *     responses:
  *       200:
@@ -184,7 +216,7 @@ app.post("/items", checkDbConnection, async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-app.get("/items", checkDbConnection, async (req, res) => {
+app.get("/smoke", checkDbConnection, async (req, res) => {
     try {
         const items = await getItems();
         res.json(items);
@@ -196,9 +228,9 @@ app.get("/items", checkDbConnection, async (req, res) => {
 
 /**
  * @swagger
- * /items/{id}:
+ * /smoke/{id}:
  *   get:
- *     summary: Get a single item by ID
+ *     summary: Get a single smoke point item by ID
  *     tags: [Items]
  *     parameters:
  *       - in: path
@@ -227,7 +259,7 @@ app.get("/items", checkDbConnection, async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-app.get("/items/:id", checkDbConnection, async (req, res) => {
+app.get("/smoke/:id", checkDbConnection, async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
         const item = await getItemById(id);
@@ -243,9 +275,9 @@ app.get("/items/:id", checkDbConnection, async (req, res) => {
 
 /**
  * @swagger
- * /items/{id}:
+ * /smoke/{id}:
  *   put:
- *     summary: Update an item by ID
+ *     summary: Update a smoke point item by ID
  *     tags: [Items]
  *     parameters:
  *       - in: path
@@ -286,14 +318,14 @@ app.get("/items/:id", checkDbConnection, async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-app.put("/items/:id", checkDbConnection, async (req, res) => {
+app.put("/smoke/:id", checkDbConnection, async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
-        const { name, description } = req.body;
+        const { name, description, smoker, longitude, latitude } = req.body;
         if (!name) {
             return res.status(400).json({ error: "Name is required" });
         }
-        const updatedItem = await updateItem(id, name, description || null);
+        const updatedItem = await updateItem(id, name, description || null, smoker, longitude, latitude);
         if (!updatedItem) {
             return res.status(404).json({ error: "Item not found" });
         }
@@ -306,9 +338,9 @@ app.put("/items/:id", checkDbConnection, async (req, res) => {
 
 /**
  * @swagger
- * /items/{id}:
+ * /smoke/{id}:
  *   delete:
- *     summary: Delete an item by ID
+ *     summary: Delete a smoke point item by ID
  *     tags: [Items]
  *     parameters:
  *       - in: path
@@ -333,7 +365,7 @@ app.put("/items/:id", checkDbConnection, async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-app.delete("/items/:id", checkDbConnection, async (req, res) => {
+app.delete("/smoke/:id", checkDbConnection, async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
         const deleted = await deleteItem(id);
