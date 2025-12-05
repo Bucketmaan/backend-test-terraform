@@ -12,6 +12,7 @@ import {
 } from "./repo.js";
 
 const app = express();
+const router = express.Router();
 const port = 3000;
 
 app.use(cors());
@@ -31,52 +32,26 @@ const swaggerOptions = {
                 Item: {
                     type: "object",
                     properties: {
-                        id: {
-                            type: "integer",
-                            description: "Item ID",
-                        },
-                        name: {
-                            type: "string",
-                            description: "Item name",
-                        },
-                        description: {
-                            type: "string",
-                            description: "Item description",
-                        },
-                        created_at: {
-                            type: "string",
-                            format: "date-time",
-                            description: "Creation timestamp",
-                        },
-                        updated_at: {
-                            type: "string",
-                            format: "date-time",
-                            description: "Last update timestamp",
-                        },
+                        id: { type: "integer" },
+                        name: { type: "string" },
+                        description: { type: "string" },
+                        created_at: { type: "string", format: "date-time" },
+                        updated_at: { type: "string", format: "date-time" },
                     },
                     required: ["id", "name"],
                 },
                 ItemInput: {
                     type: "object",
                     properties: {
-                        name: {
-                            type: "string",
-                            description: "Item name",
-                        },
-                        description: {
-                            type: "string",
-                            description: "Item description",
-                        },
+                        name: { type: "string" },
+                        description: { type: "string" },
                     },
                     required: ["name"],
                 },
                 Error: {
                     type: "object",
                     properties: {
-                        error: {
-                            type: "string",
-                            description: "Error message",
-                        },
+                        error: { type: "string" },
                     },
                 },
             },
@@ -86,7 +61,9 @@ const swaggerOptions = {
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Swagger served under /api/api-docs
+app.use("/api/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Track database connection status
 let dbReady = false;
@@ -99,9 +76,7 @@ initDb()
     })
     .catch((err) => {
         console.error("Failed to initialize database on startup:", err);
-        console.log(
-            "Server will start anyway. Database will be initialized when available."
-        );
+        console.log("Server will start anyway. DB will be initialized when available.");
     });
 
 // Middleware to check database availability
@@ -109,8 +84,7 @@ const checkDbConnection = (req, res, next) => {
     if (!dbReady) {
         return res.status(503).json({
             error: "Database not available",
-            message:
-                "The database connection is currently unavailable. Please try again later.",
+            message: "The database connection is currently unavailable. Try again later.",
         });
     }
     next();
@@ -118,37 +92,9 @@ const checkDbConnection = (req, res, next) => {
 
 /**
  * @swagger
- * /items:
- *   post:
- *     summary: Create a new item
- *     tags: [Items]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/ItemInput'
- *     responses:
- *       201:
- *         description: Item created successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Item'
- *       400:
- *         description: Bad request - name is required
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       500:
- *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
+ * /api/items:
  */
-app.post("/items", checkDbConnection, async (req, res) => {
+router.post("/items", checkDbConnection, async (req, res) => {
     try {
         const { name, description } = req.body;
         if (!name) {
@@ -164,27 +110,9 @@ app.post("/items", checkDbConnection, async (req, res) => {
 
 /**
  * @swagger
- * /items:
- *   get:
- *     summary: Get all items
- *     tags: [Items]
- *     responses:
- *       200:
- *         description: List of all items
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Item'
- *       500:
- *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
+ * /api/items:
  */
-app.get("/items", checkDbConnection, async (req, res) => {
+router.get("/items", checkDbConnection, async (req, res) => {
     try {
         const items = await getItems();
         res.json(items);
@@ -196,38 +124,9 @@ app.get("/items", checkDbConnection, async (req, res) => {
 
 /**
  * @swagger
- * /items/{id}:
- *   get:
- *     summary: Get a single item by ID
- *     tags: [Items]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: Item ID
- *     responses:
- *       200:
- *         description: Item found
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Item'
- *       404:
- *         description: Item not found
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       500:
- *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
+ * /api/items/{id}:
  */
-app.get("/items/:id", checkDbConnection, async (req, res) => {
+router.get("/items/:id", checkDbConnection, async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
         const item = await getItemById(id);
@@ -243,50 +142,9 @@ app.get("/items/:id", checkDbConnection, async (req, res) => {
 
 /**
  * @swagger
- * /items/{id}:
- *   put:
- *     summary: Update an item by ID
- *     tags: [Items]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: Item ID
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/ItemInput'
- *     responses:
- *       200:
- *         description: Item updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Item'
- *       400:
- *         description: Bad request - name is required
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       404:
- *         description: Item not found
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       500:
- *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
+ * /api/items/{id}:
  */
-app.put("/items/:id", checkDbConnection, async (req, res) => {
+router.put("/items/:id", checkDbConnection, async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
         const { name, description } = req.body;
@@ -306,34 +164,9 @@ app.put("/items/:id", checkDbConnection, async (req, res) => {
 
 /**
  * @swagger
- * /items/{id}:
- *   delete:
- *     summary: Delete an item by ID
- *     tags: [Items]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: Item ID
- *     responses:
- *       204:
- *         description: Item deleted successfully
- *       404:
- *         description: Item not found
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       500:
- *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
+ * /api/items/{id}:
  */
-app.delete("/items/:id", checkDbConnection, async (req, res) => {
+router.delete("/items/:id", checkDbConnection, async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
         const deleted = await deleteItem(id);
@@ -349,25 +182,10 @@ app.delete("/items/:id", checkDbConnection, async (req, res) => {
 
 /**
  * @swagger
- * /health:
- *   get:
- *     summary: Health check endpoint (server and database)
- *     tags: [Health]
- *     responses:
- *       200:
- *         description: Service is healthy
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: ok
+ * /api/health:
  */
-app.get("/health", async (req, res) => {
+router.get("/health", async (req, res) => {
     try {
-        // Simple query to check database connectivity
         await getItems();
         res.json({ status: "ok" });
     } catch (err) {
@@ -379,9 +197,10 @@ app.get("/health", async (req, res) => {
     }
 });
 
+// Mount all routes under /api
+app.use("/api", router);
+
 app.listen(port, () => {
     console.log(`CRUD service running at http://localhost:${port}`);
-    console.log(
-        `Swagger API docs available at http://localhost:${port}/api-docs`
-    );
+    console.log(`Swagger API docs available at http://localhost:${port}/api/api-docs`);
 });
