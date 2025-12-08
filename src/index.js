@@ -183,11 +183,7 @@ const checkDbConnection = (req, res, next) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-<<<<<<< HEAD
-app.post(api_version + "/items", checkDbConnection, async (req, res) => {
-=======
-app.post("/smoke", checkDbConnection, async (req, res) => {
->>>>>>> dev
+app.post(api_version + "/smoke", checkDbConnection, async (req, res) => {
     try {
         const { name, description, smoker, longitude, latitude } = req.body;
         if (!name) {
@@ -223,11 +219,7 @@ app.post("/smoke", checkDbConnection, async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-<<<<<<< HEAD
-app.get(api_version + "/items", checkDbConnection, async (req, res) => {
-=======
-app.get("/smoke", checkDbConnection, async (req, res) => {
->>>>>>> dev
+app.get(api_version + "/smoke", checkDbConnection, async (req, res) => {
     try {
         const items = await getItems();
         res.json(items);
@@ -270,11 +262,7 @@ app.get("/smoke", checkDbConnection, async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-<<<<<<< HEAD
-app.get(api_version + "/items/:id", checkDbConnection, async (req, res) => {
-=======
-app.get("/smoke/:id", checkDbConnection, async (req, res) => {
->>>>>>> dev
+app.get(api_version + "/smoke/:id", checkDbConnection, async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
         const item = await getItemById(id);
@@ -333,11 +321,7 @@ app.get("/smoke/:id", checkDbConnection, async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-<<<<<<< HEAD
-app.put(api_version + "/items/:id", checkDbConnection, async (req, res) => {
-=======
-app.put("/smoke/:id", checkDbConnection, async (req, res) => {
->>>>>>> dev
+app.put(api_version + "/smoke/:id", checkDbConnection, async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
         const { name, description, smoker, longitude, latitude } = req.body;
@@ -384,11 +368,7 @@ app.put("/smoke/:id", checkDbConnection, async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-<<<<<<< HEAD
-app.delete(api_version + "/items/:id", checkDbConnection, async (req, res) => {
-=======
-app.delete("/smoke/:id", checkDbConnection, async (req, res) => {
->>>>>>> dev
+app.delete(api_version + "/smoke/:id", checkDbConnection, async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
         const deleted = await deleteItem(id);
