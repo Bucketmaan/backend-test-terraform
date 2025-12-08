@@ -154,7 +154,7 @@ const checkDbConnection = (req, res, next) => {
 
 /**
  * @swagger
- * /smoke:
+ * /api/v1/smoke:
  *   post:
  *     summary: Create a new smoke point item
  *     tags: [Items]
@@ -200,7 +200,7 @@ app.post(api_version + "/smoke", checkDbConnection, async (req, res) => {
 
 /**
  * @swagger
- * /smoke:
+ * /api/v1/smoke:
  *   get:
  *     summary: Get all smoke point items
  *     tags: [Items]
@@ -232,7 +232,7 @@ app.get(api_version + "/smoke", checkDbConnection, async (req, res) => {
 
 /**
  * @swagger
- * /smoke/{id}:
+ * //api/v1smoke/{id}:
  *   get:
  *     summary: Get a single smoke point item by ID
  *     tags: [Items]
@@ -279,7 +279,7 @@ app.get(api_version + "/smoke/:id", checkDbConnection, async (req, res) => {
 
 /**
  * @swagger
- * /smoke/{id}:
+ * //api/v1smoke/{id}:
  *   put:
  *     summary: Update a smoke point item by ID
  *     tags: [Items]
@@ -342,7 +342,7 @@ app.put(api_version + "/smoke/:id", checkDbConnection, async (req, res) => {
 
 /**
  * @swagger
- * /smoke/{id}:
+ * //api/v1smoke/{id}:
  *   delete:
  *     summary: Delete a smoke point item by ID
  *     tags: [Items]
@@ -385,7 +385,7 @@ app.delete(api_version + "/smoke/:id", checkDbConnection, async (req, res) => {
 
 /**
  * @swagger
- * /health:
+ * //api/v1health:
  *   get:
  *     summary: Health check endpoint (server and database)
  *     tags: [Health]
