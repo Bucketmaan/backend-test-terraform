@@ -30,7 +30,7 @@ const swaggerOptions = {
         },
         servers: [
             {
-                url: "http://localhost:3000",
+                url: "/",
                 description: "Development server",
             },
         ],
@@ -232,7 +232,7 @@ app.get(api_version + "/smoke", checkDbConnection, async (req, res) => {
 
 /**
  * @swagger
- * //api/v1smoke/{id}:
+ * /api/v1/smoke/{id}:
  *   get:
  *     summary: Get a single smoke point item by ID
  *     tags: [Items]
@@ -279,7 +279,7 @@ app.get(api_version + "/smoke/:id", checkDbConnection, async (req, res) => {
 
 /**
  * @swagger
- * //api/v1smoke/{id}:
+ * /api/v1/smoke/{id}:
  *   put:
  *     summary: Update a smoke point item by ID
  *     tags: [Items]
@@ -342,7 +342,7 @@ app.put(api_version + "/smoke/:id", checkDbConnection, async (req, res) => {
 
 /**
  * @swagger
- * //api/v1smoke/{id}:
+ * /api/v1/smoke/{id}:
  *   delete:
  *     summary: Delete a smoke point item by ID
  *     tags: [Items]
@@ -385,7 +385,7 @@ app.delete(api_version + "/smoke/:id", checkDbConnection, async (req, res) => {
 
 /**
  * @swagger
- * //api/v1health:
+ * /api/v1/health:
  *   get:
  *     summary: Health check endpoint (server and database)
  *     tags: [Health]
