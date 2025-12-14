@@ -5,14 +5,14 @@ const router = express.Router();
 
 /**
  * @openapi
- * /api/v1/items:
+ * /api/v1/smoke:
  *   get:
- *     summary: Liste des items
+ *     summary: Liste des éléments
  *     responses:
  *       200:
  *         description: OK
  */
-router.get("/items", async (req, res) => {
+router.get("/smoke", async (req, res) => {
   try {
     const pool = getPool();
     const { rows } = await pool.query("SELECT id, name FROM items ORDER BY id ASC");
@@ -25,11 +25,11 @@ router.get("/items", async (req, res) => {
 
 /**
  * @openapi
- * /api/v1/items/{id}:
+ * /api/v1/smoke/{id}:
  *   get:
- *     summary: Récupérer un item
+ *     summary: Récupérer un élément
  */
-router.get("/items/:id", async (req, res) => {
+router.get("/smoke/:id", async (req, res) => {
   try {
     const pool = getPool();
     const { rows } = await pool.query("SELECT id, name FROM items WHERE id = $1", [req.params.id]);
@@ -43,11 +43,11 @@ router.get("/items/:id", async (req, res) => {
 
 /**
  * @openapi
- * /api/v1/items:
+ * /api/v1/smoke:
  *   post:
- *     summary: Créer un item
+ *     summary: Créer un élément
  */
-router.post("/items", async (req, res) => {
+router.post("/smoke", async (req, res) => {
   try {
     const { name } = req.body || {};
     if (!name) return res.status(400).json({ error: "name_required" });
@@ -66,11 +66,11 @@ router.post("/items", async (req, res) => {
 
 /**
  * @openapi
- * /api/v1/items/{id}:
+ * /api/v1/smoke/{id}:
  *   put:
- *     summary: Modifier un item
+ *     summary: Modifier un élément
  */
-router.put("/items/:id", async (req, res) => {
+router.put("/smoke/:id", async (req, res) => {
   try {
     const { name } = req.body || {};
     if (!name) return res.status(400).json({ error: "name_required" });
@@ -90,11 +90,11 @@ router.put("/items/:id", async (req, res) => {
 
 /**
  * @openapi
- * /api/v1/items/{id}:
+ * /api/v1/smoke/{id}:
  *   delete:
- *     summary: Supprimer un item
+ *     summary: Supprimer un élément
  */
-router.delete("/items/:id", async (req, res) => {
+router.delete("/smoke/:id", async (req, res) => {
   try {
     const pool = getPool();
     const { rowCount } = await pool.query("DELETE FROM items WHERE id = $1", [req.params.id]);

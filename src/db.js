@@ -2,6 +2,7 @@ const { Pool } = require("pg");
 
 let pool;
 let lastActivity = Date.now();
+let dbInitialized = false;
 const IDLE_TIMEOUT = 60000; // 60 secondes
 
 function getPool() {
@@ -29,6 +30,35 @@ function getPool() {
     return pool;
 }
 
+// Initialiser la base de données (créer la table si elle n'existe pas)
+async function initDb() {
+    if (dbInitialized) {
+        return; // Déjà initialisée
+    }
+
+    try {
+        const client = await getPool().connect();
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS items (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                description TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                smoker VARCHAR(255),
+                longitude FLOAT,
+                latitude FLOAT
+            )
+        `);
+        console.log('Database initialized successfully');
+        dbInitialized = true;
+        client.release();
+    } catch (err) {
+        console.error('Error initializing database:', err);
+        throw err;
+    }
+}
+
 // Fermer le pool si inactif
 async function closePoolIfIdle() {
     if (pool && (Date.now() - lastActivity) > IDLE_TIMEOUT) {
@@ -42,4 +72,4 @@ async function closePoolIfIdle() {
     }
 }
 
-module.exports = { getPool, closePoolIfIdle };
+module.exports = { getPool, initDb, closePoolIfIdle };
