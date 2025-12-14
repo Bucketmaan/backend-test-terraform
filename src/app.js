@@ -9,9 +9,10 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.set('trust proxy', true); // Important pour Lambda derrière API Gateway
 
-// Healthcheck (utile pour tests)
-app.get("/health", (req, res) => res.json({ ok: true }));
+// Healthcheck (utile pour tests et Lambda)
+app.get("/health", (req, res) => res.json({ ok: true, timestamp: new Date().toISOString() }));
 
 // Swagger (optionnel en prod)
 const swaggerSpec = swaggerJsdoc({
@@ -28,5 +29,11 @@ if (process.env.NODE_ENV !== "production") {
 
 // API v1
 app.use("/api/v1", itemsRouter);
+
+// Gestion des erreurs globales
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({ error: "internal_error" });
+});
 
 module.exports = { app };
