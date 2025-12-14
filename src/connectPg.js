@@ -11,9 +11,8 @@ const pool = new pg.Pool({
     database: config.pgDatabase,
     max: config.pgMaxConnections || 10,
     idleTimeoutMillis: config.pgIdleTimeoutMillis || 30000,
-    ssl: { 
-        rejectUnauthorized: false
-    },
+    connectionTimeoutMillis: 5000,
+    ssl: process.env.PG_SSL === "true" ? { rejectUnauthorized: false } : false,
 });
 
 pool.on("error", (err) => {
