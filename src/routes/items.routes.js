@@ -1,21 +1,44 @@
 const express = require("express");
-const { getPool } = require("../db");
+const { getPool, initDb } = require("../db");
 
 const router = express.Router();
+
+/**
+ * Middleware: s'assurer que la DB est initialisée
+ */
+router.use(async (_req, _res, next) => {
+  try {
+    await initDb();
+    next();
+  } catch (e) {
+    console.error("DB init failed", e);
+    next(e);
+  }
+});
 
 /**
  * @openapi
  * /api/v1/smoke:
  *   get:
  *     summary: Liste des éléments
- *     responses:
- *       200:
- *         description: OK
  */
-router.get("/smoke", async (req, res) => {
+router.get("/smoke", async (_req, res) => {
   try {
     const pool = getPool();
-    const { rows } = await pool.query("SELECT id, name FROM items ORDER BY id ASC");
+    const { rows } = await pool.query(`
+      SELECT
+        id,
+        name,
+        description,
+        smoker,
+        latitude,
+        longitude,
+        created_at,
+        updated_at
+      FROM items
+      ORDER BY id ASC
+    `);
+
     res.json(rows);
   } catch (e) {
     console.error(e);
@@ -32,8 +55,27 @@ router.get("/smoke", async (req, res) => {
 router.get("/smoke/:id", async (req, res) => {
   try {
     const pool = getPool();
-    const { rows } = await pool.query("SELECT id, name FROM items WHERE id = $1", [req.params.id]);
-    if (!rows[0]) return res.status(404).json({ error: "not_found" });
+    const { rows } = await pool.query(
+      `
+      SELECT
+        id,
+        name,
+        description,
+        smoker,
+        latitude,
+        longitude,
+        created_at,
+        updated_at
+      FROM items
+      WHERE id = $1
+      `,
+      [req.params.id]
+    );
+
+    if (!rows[0]) {
+      return res.status(404).json({ error: "not_found" });
+    }
+
     res.json(rows[0]);
   } catch (e) {
     console.error(e);
@@ -49,14 +91,34 @@ router.get("/smoke/:id", async (req, res) => {
  */
 router.post("/smoke", async (req, res) => {
   try {
-    const { name } = req.body || {};
-    if (!name) return res.status(400).json({ error: "name_required" });
+    const {
+      name,
+      description = null,
+      smoker = null,
+      latitude = null,
+      longitude = null
+    } = req.body || {};
+
+    if (!name) {
+      return res.status(400).json({ error: "name_required" });
+    }
 
     const pool = getPool();
     const { rows } = await pool.query(
-      "INSERT INTO items (name) VALUES ($1) RETURNING id, name",
-      [name]
+      `
+      INSERT INTO items (
+        name,
+        description,
+        smoker,
+        latitude,
+        longitude
+      )
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *
+      `,
+      [name, description, smoker, latitude, longitude]
     );
+
     res.status(201).json(rows[0]);
   } catch (e) {
     console.error(e);
@@ -72,15 +134,39 @@ router.post("/smoke", async (req, res) => {
  */
 router.put("/smoke/:id", async (req, res) => {
   try {
-    const { name } = req.body || {};
-    if (!name) return res.status(400).json({ error: "name_required" });
+    const {
+      name,
+      description,
+      smoker,
+      latitude,
+      longitude
+    } = req.body || {};
+
+    if (!name) {
+      return res.status(400).json({ error: "name_required" });
+    }
 
     const pool = getPool();
     const { rows } = await pool.query(
-      "UPDATE items SET name = $1 WHERE id = $2 RETURNING id, name",
-      [name, req.params.id]
+      `
+      UPDATE items
+      SET
+        name = $1,
+        description = $2,
+        smoker = $3,
+        latitude = $4,
+        longitude = $5,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $6
+      RETURNING *
+      `,
+      [name, description, smoker, latitude, longitude, req.params.id]
     );
-    if (!rows[0]) return res.status(404).json({ error: "not_found" });
+
+    if (!rows[0]) {
+      return res.status(404).json({ error: "not_found" });
+    }
+
     res.json(rows[0]);
   } catch (e) {
     console.error(e);
@@ -97,8 +183,15 @@ router.put("/smoke/:id", async (req, res) => {
 router.delete("/smoke/:id", async (req, res) => {
   try {
     const pool = getPool();
-    const { rowCount } = await pool.query("DELETE FROM items WHERE id = $1", [req.params.id]);
-    if (!rowCount) return res.status(404).json({ error: "not_found" });
+    const { rowCount } = await pool.query(
+      "DELETE FROM items WHERE id = $1",
+      [req.params.id]
+    );
+
+    if (!rowCount) {
+      return res.status(404).json({ error: "not_found" });
+    }
+
     res.status(204).send();
   } catch (e) {
     console.error(e);
